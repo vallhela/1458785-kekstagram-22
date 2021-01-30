@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм»
 
 * Студент: [Elena Gerasimova](https://up.htmlacademy.ru/javascript/22/user/1458785).
-* Наставник: `Неизвестно`.
+* Наставник: [Никита Сигов](https://htmlacademy.ru/profile/crazer).
 
 ---
 
