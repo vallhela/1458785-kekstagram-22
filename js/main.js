@@ -1,54 +1,5 @@
-/**
- * Implementation from https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/Math/random
- */
-const getRandomNumber = function (min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-getRandomNumber(0,7);
-
-const isValidLength = function (text, maxLength = 140) {
-  return text.length <= maxLength;
-}
-
-isValidLength('Hello world');
-
-const names = [
-  'Иван',
-  'Марья',
-  'Daniel',
-  'Петр',
-  'Eva',
-  'Darkmate',
-  'Люсьен',
-  'Петра',
-];
-
-const descriptions = [
-  'Нереально, но факт!',
-  'Всякое бывает...',
-  'Просто бомбически!',
-  'Флексим',
-  'Вот бы сейчас...',
-  'Просто Я',
-  'Я здесь был',
-  'Праздник в разгаре!',
-];
-
-const messages = [
-  'Всё отлично!',
-  'В целом всё неплохо. Но не всё.',
-  'Когда вы делаете фотографию, хорошо бы убирать палец из кадра. В конце концов это просто непрофессионально.',
-  'Моя бабушка случайно чихнула с фотоаппаратом в руках и у неё получилась фотография лучше.',
-  'Я поскользнулся на банановой кожуре и уронил фотоаппарат на кота и у меня получилась фотография лучше.',
-  'Лица у людей на фотке перекошены, как будто их избивают. Как можно было поймать такой неудачный момент?!',
-];
-
-const getRandomArrayElement = (elements) => {
-  return elements[getRandomNumber(0, elements.length - 1)];
-};
+import {getRandomNumber, getRandomArrayElement} from './utils.js';
+import {names, descriptions, messages} from './data.js';
 
 let photoId = 0;
 let commentIds = [];
