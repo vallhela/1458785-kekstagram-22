@@ -19,4 +19,11 @@ const getRandomArrayElement = (elements) => {
   return elements[getRandomNumber(0, elements.length - 1)];
 };
 
-export {getRandomNumber, getRandomArrayElement};
+const removeChildren = function (parent) {
+  for (let i = parent.children.length - 1; i >= 0; i--) {
+    const child = parent.children[i];
+    child.parentElement.removeChild(child);
+  }
+};
+
+export {getRandomNumber, getRandomArrayElement, removeChildren};

@@ -56,7 +56,7 @@ const getComments = () => {
   for (let i = 0; i < comments.length; i++) {
     comments[i] = {
       id: getCommentId(),
-      avatar: 'image/avatar-' + getRandomNumber(1, 6) + '.svg',
+      avatar: 'img/avatar-' + getRandomNumber(1, 6) + '.svg',
       message: getCommentMessage(),
       name: getRandomArrayElement(names),
     }
