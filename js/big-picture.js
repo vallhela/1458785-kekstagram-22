@@ -1,4 +1,4 @@
-import {removeChildren} from './utils.js';
+import {removeChildren, asModal} from './utils.js';
 
 const bigPictureView = document.querySelector('.big-picture');
 const bigPictureClose = bigPictureView.querySelector('.big-picture__cancel');
@@ -8,12 +8,6 @@ const bigPictureLikes = bigPictureView.querySelector('.likes-count');
 const bigPictureCommentsCount = bigPictureView.querySelector('.comments-count');
 const bigPictureComments = bigPictureView.querySelector('.social__comments');
 const bigPictureDescription = bigPictureView.querySelector('.social__caption');
-const body = document.querySelector('body');
-
-bigPictureClose.addEventListener('click', () => {
-  bigPictureView.classList.add('hidden');
-  body.classList.remove('modal-open');
-});
 
 const createComment = function (comment) {
   const li = document.createElement('li');
@@ -44,10 +38,20 @@ const showPhotoModal = function (photo) {
     bigPictureComments.appendChild(createComment(comment));
   });
 
-  bigPictureView.classList.remove('hidden');
+  const modal = asModal(bigPictureView);
+  const onBigPictureCloseClicked = function(){
+    modal.close();
+  }
+
+  modal.onClosed = function(){
+    bigPictureClose.removeEventListener('click', onBigPictureCloseClicked);
+  };
+
+  bigPictureClose.addEventListener('click', onBigPictureCloseClicked);
+  modal.open();
+
   bigPictureView.querySelector('.social__comment-count').classList.add('hidden');
   bigPictureView.querySelector('.comments-loader').classList.add('hidden');
-  body.classList.add('modal-open');
 };
 
 export {showPhotoModal};
