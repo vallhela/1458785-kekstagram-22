@@ -1,4 +1,4 @@
-import {asModal} from './utils.js';
+import {asModal, isValidLength, isEscEvent} from './utils.js';
 import '../nouislider/nouislider.js';
 
 const noUiSlider = window.noUiSlider;
@@ -110,6 +110,16 @@ const effectsSliderContainer = document.querySelector('.img-upload__effect-level
 const effectsSlider = effectsSliderContainer.querySelector('.effect-level__slider');
 const effectsSliderValue = effectsSliderContainer.querySelector('.effect-level__value');
 
+//Переменные валидации формы
+const uploadFormText = document.querySelector('.img-upload__text');
+const hashtagInput = uploadFormText.querySelector('.text__hashtags');
+const descriptionInput = uploadFormText.querySelector('.text__description');
+const MAX_DESCRIPTION_LENGTH = 140;
+const MIN_HASHTAG_LENGTH = 1;
+const MAX_HASHTAG_LENGTH = 20;
+const MAX_HASHTAG_COUNT = 5;
+const letters = /^[0-9a-zA-Zа-яА-Я]+$/;
+
 const setScale = function(scale){
   scaleValue.value = scale + '%';
   scalePhoto.style.transform = 'scale(' + (scale / 100) + ')';
@@ -215,3 +225,93 @@ effectsList.addEventListener('change', function() {
 });
 
 setSlider();
+
+// ------------------Валидация формы----------------------------
+
+hashtagInput.addEventListener('keydown', (evt) => {
+  if (isEscEvent(evt)) {
+    evt.stopPropagation();
+  }
+});
+
+const validateHashtag = function (hashtag) {
+  if (hashtag[0] !== '#') {
+    return 'Хэш-тег должен начинаться с #';
+  }
+
+  if (hashtag.length === MIN_HASHTAG_LENGTH) {
+    return 'Хэш-тег не может состоять только из одной #';
+  }
+
+  if (hashtag.length > MAX_HASHTAG_LENGTH) {
+    return 'Максимальная длина одного хэш-тега 20 символов, включая #';
+  }
+
+  if (!hashtag.substring(1).match(letters)) {
+    return 'Cтрока после решётки должна состоять из букв и чисел и не может содержать пробелы, спецсимволы (#, @, $ и т. п.), символы пунктуации (тире, дефис, запятая и т. п.), эмодзи и т. д.';
+  }
+
+  return null;
+};
+
+const validateHashtags = function (hashtags) {
+
+  if (hashtags.length !== [...new Set(hashtags)].length) {
+    return 'Oдин и тот же хэш-тег не может быть использован дважды';
+  }
+
+  if (hashtags.length > MAX_HASHTAG_COUNT) {
+    return 'Нельзя указать больше пяти хэш-тегов';
+  }
+
+  for (let hashtag of hashtags) {
+    const errorMessage = validateHashtag(hashtag);
+    if (errorMessage !== null) {
+      return errorMessage;
+    }
+  }
+
+  return null;
+};
+
+hashtagInput.addEventListener('input', () => {
+  const hashtagText = hashtagInput.value;
+  const hashtags = hashtagText.split(' ').map(p => p.toLowerCase());
+
+  const errorMessage = validateHashtags(hashtags);
+
+  if (errorMessage !== null) {
+    hashtagInput.setCustomValidity(errorMessage);
+  } else {
+    hashtagInput.setCustomValidity('');
+  }
+
+  hashtagInput.reportValidity();
+
+});
+
+descriptionInput.addEventListener('keydown', (evt) => {
+  if (isEscEvent(evt)) {
+    evt.stopPropagation();
+  }
+});
+
+descriptionInput.addEventListener('input', () => {
+  const descriptionLength = descriptionInput.value.length;
+
+  if (isValidLength(descriptionLength, MAX_DESCRIPTION_LENGTH)) {
+    descriptionInput.setCustomValidity('Использовано ' + descriptionLength +' симв. из ' + MAX_DESCRIPTION_LENGTH);
+  } else if (descriptionLength  > MAX_DESCRIPTION_LENGTH) {
+    descriptionInput.setCustomValidity('Удалите лишние ' + (descriptionLength - MAX_DESCRIPTION_LENGTH) +' симв.');
+  } else {
+    descriptionInput.setCustomValidity('');
+  }
+  descriptionInput.reportValidity();
+});
+
+
+
+
+
+
+
