@@ -1,5 +1,7 @@
 import {asModal, isValidLength, isEscEvent} from './utils.js';
+import {showSuccess, showError} from './message-box.js';
 import '../nouislider/nouislider.js';
+import {sendData} from './api.js';
 
 const noUiSlider = window.noUiSlider;
 
@@ -111,6 +113,7 @@ const effectsSlider = effectsSliderContainer.querySelector('.effect-level__slide
 const effectsSliderValue = effectsSliderContainer.querySelector('.effect-level__value');
 
 //Переменные валидации формы
+const uploadForm = document.querySelector('.img-upload__form');
 const uploadFormText = document.querySelector('.img-upload__text');
 const hashtagInput = uploadFormText.querySelector('.text__hashtags');
 const descriptionInput = uploadFormText.querySelector('.text__description');
@@ -133,11 +136,29 @@ uploadPicture.addEventListener('change', function() {
   };
 
   modal.onClosed = function(){
+    setEffect(effectDefault);
+    setScale(scaleDefaultValue);
     uploadPicture.value = '';
+    descriptionInput.value = '';
+    hashtagInput.value = '';
+    uploadForm.removeEventListener('submit', onUploadFormSubmit);
     uploadCancel.removeEventListener('click', onUploadCancelClicked);
   };
 
+  const onUploadFormSubmit = function(evt){
+    evt.preventDefault();
+
+    sendData(new FormData(evt.target))
+      .then(() =>{
+        modal.close();
+        showSuccess();
+      })
+      .catch(() => showError());
+  }
+
   uploadCancel.addEventListener('click', onUploadCancelClicked);
+  uploadForm.addEventListener('submit', onUploadFormSubmit);
+
   setEffect(effectDefault);
   modal.open();
 });
@@ -308,10 +329,3 @@ descriptionInput.addEventListener('input', () => {
   }
   descriptionInput.reportValidity();
 });
-
-
-
-
-
-
-
