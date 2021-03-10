@@ -12,7 +12,7 @@ const getRandomNumber = function (min, max) {
 
 getRandomNumber(0,7);
 
-const isValidLength = function (text, maxLength = 140) {
+const isValidLength = function (text, maxLength) {
   return text.length <= maxLength;
 }
 
@@ -65,4 +65,4 @@ const asModal = function (element) {
   return modal;
 };
 
-export {getRandomNumber, getRandomArrayElement, removeChildren, asModal};
+export {getRandomNumber, getRandomArrayElement, removeChildren, asModal, isValidLength, isEscEvent};
