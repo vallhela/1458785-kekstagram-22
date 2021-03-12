@@ -1,5 +1,7 @@
 import {asModal, isValidLength, isEscEvent} from './utils.js';
+import {showSuccess, showError} from './message-box.js';
 import '../nouislider/nouislider.js';
+import {sendData} from './api.js';
 
 const noUiSlider = window.noUiSlider;
 
@@ -111,6 +113,7 @@ const effectsSlider = effectsSliderContainer.querySelector('.effect-level__slide
 const effectsSliderValue = effectsSliderContainer.querySelector('.effect-level__value');
 
 //Переменные валидации формы
+const uploadForm = document.querySelector('.img-upload__form');
 const uploadFormText = document.querySelector('.img-upload__text');
 const hashtagInput = uploadFormText.querySelector('.text__hashtags');
 const descriptionInput = uploadFormText.querySelector('.text__description');
@@ -133,11 +136,29 @@ uploadPicture.addEventListener('change', function() {
   };
 
   modal.onClosed = function(){
+    setEffect(effectDefault);
+    setScale(scaleDefaultValue);
     uploadPicture.value = '';
+    descriptionInput.value = '';
+    hashtagInput.value = '';
+    uploadForm.removeEventListener('submit', onUploadFormSubmit);
     uploadCancel.removeEventListener('click', onUploadCancelClicked);
   };
 
+  const onUploadFormSubmit = function(evt){
+    evt.preventDefault();
+
+    sendData(new FormData(evt.target))
+      .then(() =>{
+        modal.close();
+        showSuccess();
+      })
+      .catch(() => showError());
+  }
+
   uploadCancel.addEventListener('click', onUploadCancelClicked);
+  uploadForm.addEventListener('submit', onUploadFormSubmit);
+
   setEffect(effectDefault);
   modal.open();
 });
@@ -173,6 +194,10 @@ const setEffect = function(effectClass) {
   scalePhoto.style.filter = '';
   scalePhoto.classList.add(effectClass);
 
+  const radioButtonId = effectClass.replace('s__preview-','');
+  const radio = effectsList.querySelector('#' + radioButtonId);
+  radio.checked = true;
+
   const effect = effects.getByClass(effectClass);
   if (effect) {
     const sliderOptions = effect.getSliderOptions();
@@ -206,11 +231,15 @@ const setSlider = function() {
   });
 
   effectsSlider.noUiSlider.on('update', (values, handle) => {
-    const value = values[handle];
-    effectsSliderValue.value = value;
     const effect = effects.getByClass(scalePhoto.className);
     if (effect) {
+      const value = values[handle];
+      const initial = effect.getSliderOptions().initial;
+      effectsSliderValue.value = (100*(+value)/(+initial)).toFixed(0);
       effect.set(scalePhoto, value);
+    }
+    else{
+      effectsSliderValue.value = '';
     }
   });
 };
@@ -309,9 +338,7 @@ descriptionInput.addEventListener('input', () => {
   descriptionInput.reportValidity();
 });
 
-
-
-
-
-
-
+const buttonClick = document.querySelector('#upload-submit');
+buttonClick.addEventListener('click', function() {
+  buttonClick.focus();
+});
