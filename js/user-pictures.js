@@ -18,7 +18,7 @@ const renderPictureList = (similarPictures) => {
   const existingPictures = pictureContainer.querySelectorAll('.picture');
   for (let existingPicture of existingPictures) {
     existingPicture.parentNode.removeChild(existingPicture);
-  };
+  }
   const similarListFragment = document.createDocumentFragment();
 
   similarPictures
