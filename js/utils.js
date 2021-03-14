@@ -43,6 +43,7 @@ const isEscEvent = (evt) => {
 
 const asModal = function (element) {
   const modal = { };
+  modal.context = { };
   modal.element = element;
   modal.close = function(){
     modal.element.classList.add('hidden');

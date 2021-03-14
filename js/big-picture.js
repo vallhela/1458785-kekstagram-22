@@ -8,6 +8,8 @@ const bigPictureLikes = bigPictureView.querySelector('.likes-count');
 const bigPictureCommentsCount = bigPictureView.querySelector('.comments-count');
 const bigPictureComments = bigPictureView.querySelector('.social__comments');
 const bigPictureDescription = bigPictureView.querySelector('.social__caption');
+const bigPictureCommentsLoader = bigPictureView.querySelector('.comments-loader');
+const bigPictureSocialCommentCount = bigPictureView.querySelector('.social__comment-count');
 
 const createComment = function (comment) {
   const li = document.createElement('li');
@@ -34,24 +36,49 @@ const showPhotoModal = function (photo) {
 
   removeChildren(bigPictureComments);
 
-  photo.comments.forEach(comment => {
-    bigPictureComments.appendChild(createComment(comment));
-  });
-
   const modal = asModal(bigPictureView);
+  modal.context.photo = photo;
+  modal.context.showedComments = [];
+  modal.context.showNextComments = function(){
+    const batchCount = Math.floor((modal.context.showedComments.length/5));
+    const nextBatchCount = batchCount+1;
+
+    const commentsToAppend = modal.context.photo.comments.slice(
+      batchCount*5,
+      Math.max(0, Math.min(modal.context.photo.comments.length, nextBatchCount*5)));
+
+    commentsToAppend.forEach(comment => {
+      bigPictureComments.appendChild(createComment(comment));
+    });
+
+    modal.context.showedComments.push(...commentsToAppend);
+    removeChildren(bigPictureSocialCommentCount);
+    bigPictureSocialCommentCount.innerHTML = modal.context.showedComments.length + ' из <span class="comments-count">'+modal.context.photo.comments.length+'</span> комментариев';
+    if(modal.context.showedComments.length < modal.context.photo.comments.length){
+      bigPictureCommentsLoader.classList.remove('hidden');
+    }
+    else{
+      bigPictureCommentsLoader.classList.add('hidden');
+    }
+  };
+
   const onBigPictureCloseClicked = function(){
     modal.close();
   }
+  bigPictureClose.addEventListener('click', onBigPictureCloseClicked);
+
+  const onCommentsLoaderClicked = function(){
+    modal.context.showNextComments();
+  }
+  bigPictureCommentsLoader.addEventListener('click', onCommentsLoaderClicked);
 
   modal.onClosed = function(){
     bigPictureClose.removeEventListener('click', onBigPictureCloseClicked);
+    bigPictureCommentsLoader.removeEventListener('click', onCommentsLoaderClicked);
   };
 
-  bigPictureClose.addEventListener('click', onBigPictureCloseClicked);
+  modal.context.showNextComments();
   modal.open();
-
-  bigPictureView.querySelector('.social__comment-count').classList.add('hidden');
-  bigPictureView.querySelector('.comments-loader').classList.add('hidden');
 };
 
 export {showPhotoModal};
