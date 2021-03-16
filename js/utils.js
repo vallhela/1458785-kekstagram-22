@@ -11,16 +11,23 @@ const getRandomNumber = function (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-getRandomNumber(0,7);
-
 const isValidLength = function (text, maxLength) {
   return text.length <= maxLength;
 }
 
-isValidLength('Hello world');
-
 const getRandomArrayElement = (elements) => {
   return elements[getRandomNumber(0, elements.length - 1)];
+};
+
+const getRandomUniqueArrayElements = (elements, maxCount) => {
+  if (elements.length <= maxCount) {
+    return elements.slice();
+  }
+  const result = new Set();
+  while (result.size < maxCount) {
+    result.add(getRandomArrayElement(elements));
+  }
+  return Array.from(result);
 };
 
 const removeChildren = function (parent) {
@@ -118,4 +125,4 @@ const showErrorMessage = (message) => {
   }, ALERT_SHOW_TIME);
 }
 
-export {getRandomNumber, getRandomArrayElement, removeChildren, asModal, isValidLength, isEscEvent, showErrorMessage, asMessageBox};
+export {getRandomNumber, getRandomArrayElement, removeChildren, asModal, isValidLength, isEscEvent, showErrorMessage, asMessageBox, getRandomUniqueArrayElements};
