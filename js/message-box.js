@@ -1,33 +1,48 @@
-import {asMessageBox} from './utils.js';
+import {createModal} from './modal.js';
 
 const main = document.querySelector('main');
 const errorTemplate = document.querySelector('#error').content.querySelector('.error');
 const successTemplate = document.querySelector('#success').content.querySelector('.success');
 
-const show = function(element, button){
-  const messageBox = asMessageBox(element, main);
-  const close = function() {
-    messageBox.close();
+const showMessageBox = function(element, button){
+  const modal = createModal(element);
+  const onClick = function() {
+    modal.close();
   };
 
-  element.addEventListener('click', close);
-  button.addEventListener('click', close);
+  modal.onOpening = function(){
+    main.appendChild(element);
+  };
 
-  messageBox.show();
+  modal.onClosing = function(){
+    element.remove();
+  };
+
+  modal.onOpened = function(){
+    element.addEventListener('click', onClick);
+    button.addEventListener('click', onClick);
+  };
+
+  modal.onClosed = function(){
+    button.removeEventListener('click', onClick);
+    element.removeEventListener('click', onClick);
+  }
+
+  modal.open();
 }
 
-const showSuccess = function () {
+const showSuccessMessageBox = function () {
   const success = successTemplate.cloneNode(true);
   const successButton = success.querySelector('.success__button');
 
-  show(success, successButton);
+  showMessageBox(success, successButton);
 };
 
-const showError = function () {
+const showErrorMessageBox = function () {
   const error = errorTemplate.cloneNode(true);
   const errorButton = error.querySelector('.error__button');
 
-  show(error, errorButton);
+  showMessageBox(error, errorButton);
 };
 
-export {showSuccess, showError};
+export {showSuccessMessageBox, showErrorMessageBox};

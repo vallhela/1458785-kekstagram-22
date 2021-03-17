@@ -1,12 +1,8 @@
-import {initializePicturesList} from './user-pictures.js';
-import './upload-picture.js';
+import './picture-upload.js';
 import {getData} from './api.js';
-import {showErrorMessage} from './utils.js';
+import {initializePictureList} from './picture-list.js';
+import {showError} from './error-message.js';
 
 getData()
-  .then((photos) => initializePicturesList(photos))
-  .catch((error) => showErrorMessage(error));
-
-
-
-
+  .then((pictures) => initializePictureList(pictures))
+  .catch((error) => showError(error));
