@@ -122,6 +122,7 @@ const MIN_HASHTAG_LENGTH = 1;
 const MAX_HASHTAG_LENGTH = 20;
 const MAX_HASHTAG_COUNT = 5;
 const letters = /^[0-9a-zA-Zа-яА-Я]+$/;
+const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
 
 const setScale = function(scale){
   scaleValue.value = scale + '%';
@@ -129,6 +130,24 @@ const setScale = function(scale){
 }
 
 uploadPicture.addEventListener('change', function() {
+
+  const file = uploadPicture.files[0];
+  const fileName = file.name.toLowerCase();
+
+  const matches = FILE_TYPES.some((it) => {
+    return fileName.endsWith(it);
+  });
+
+  if (matches) {
+    const reader = new FileReader();
+
+    reader.addEventListener('load', () => {
+      scalePhoto.src = reader.result;
+    });
+
+    reader.readAsDataURL(file);
+  }
+
   setScale(scaleDefaultValue);
   const modal = asModal(uploadPictureModal);
   const onUploadCancelClicked = function(){
