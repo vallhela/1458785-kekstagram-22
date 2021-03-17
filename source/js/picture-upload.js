@@ -1,7 +1,6 @@
 import {createModal} from './modal.js';
 import {isValidLength, isEscEvent} from './utils.js';
 import {showSuccessMessageBox, showErrorMessageBox} from './message-box.js';
-import '../nouislider/nouislider.js';
 import {sendData} from './api.js';
 
 const SCALE_DEFAULT_VALUE = 100;
