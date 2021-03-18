@@ -152,11 +152,11 @@ pictureStartUploadInput.addEventListener('change', function() {
 
   setScale(SCALE_DEFAULT_VALUE);
   const modal = createModal(pictureUploadModal);
-  const onPictureCancelUploadButtonClicked = function(){
+  const onPictureCancelUploadButtonClick = function(){
     modal.close();
   };
 
-  const onUploadFormSubmitted = function(evt){
+  const onUploadFormSubmit = function(evt){
     evt.preventDefault();
 
     sendData(new FormData(evt.target))
@@ -172,13 +172,13 @@ pictureStartUploadInput.addEventListener('change', function() {
   };
 
   modal.onOpened = function(){
-    pictureCancelUploadButton.addEventListener('click', onPictureCancelUploadButtonClicked);
-    uploadForm.addEventListener('submit', onUploadFormSubmitted);
+    pictureCancelUploadButton.addEventListener('click', onPictureCancelUploadButtonClick);
+    uploadForm.addEventListener('submit', onUploadFormSubmit);
   };
 
   modal.onClosed = function(){
-    uploadForm.removeEventListener('submit', onUploadFormSubmitted);
-    pictureCancelUploadButton.removeEventListener('click', onPictureCancelUploadButtonClicked);
+    uploadForm.removeEventListener('submit', onUploadFormSubmit);
+    pictureCancelUploadButton.removeEventListener('click', onPictureCancelUploadButtonClick);
     setEffect(EFFECT_DEFAULT);
     setScale(SCALE_DEFAULT_VALUE);
     pictureStartUploadInput.value = '';

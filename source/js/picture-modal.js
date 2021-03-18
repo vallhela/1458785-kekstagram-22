@@ -44,7 +44,7 @@ const showPictureModal = function (picture) {
 
   removeChildren(bigPictureComments);
 
-  const modal = createModal();
+  const modal = createModal(bigPictureView);
   modal.context.picture = picture;
   modal.context.showedComments = [];
   modal.context.showNextComments = function(){
@@ -71,22 +71,22 @@ const showPictureModal = function (picture) {
     }
   };
 
-  const onBigPictureCloseClicked = function(){
+  const onBigPictureCloseClick = function(){
     modal.close();
   }
 
-  const onBigPictureCommentsLoaderClicked = function(){
+  const onBigPictureCommentsLoaderClick = function(){
     modal.context.showNextComments();
   }
 
   modal.onOpened = function(){
-    bigPictureClose.addEventListener('click', onBigPictureCloseClicked);
-    bigPictureCommentsLoader.addEventListener('click', onBigPictureCommentsLoaderClicked);
+    bigPictureClose.addEventListener('click', onBigPictureCloseClick);
+    bigPictureCommentsLoader.addEventListener('click', onBigPictureCommentsLoaderClick);
   }
 
   modal.onClosed = function(){
-    bigPictureClose.removeEventListener('click', onBigPictureCloseClicked);
-    bigPictureCommentsLoader.removeEventListener('click', onBigPictureCommentsLoaderClicked);
+    bigPictureClose.removeEventListener('click', onBigPictureCloseClick);
+    bigPictureCommentsLoader.removeEventListener('click', onBigPictureCommentsLoaderClick);
   };
 
   modal.context.showNextComments();

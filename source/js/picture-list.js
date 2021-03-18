@@ -79,14 +79,14 @@ const setFilter = function(selectedFilterButton){
   updateFilter(filter);
 }
 
-const onFilterClicked = function(evt){
+const onFilterButtonClick = function(evt){
   const clickedButton = evt.target;
   setFilter(clickedButton);
 }
 
-filterDefault.addEventListener('click', onFilterClicked);
-filterRandom.addEventListener('click', onFilterClicked);
-filterDiscussed.addEventListener('click', onFilterClicked);
+filterDefault.addEventListener('click', onFilterButtonClick);
+filterRandom.addEventListener('click', onFilterButtonClick);
+filterDiscussed.addEventListener('click', onFilterButtonClick);
 
 const initializePictureList = function (pics) {
   pictures.push(...pics);
