@@ -1,6 +1,12 @@
 const getData = () => {
   return fetch('https://22.javascript.pages.academy/kekstagram/data')
-    .then((response) => response.json())
+    .then((response) =>{
+      if(!response.ok){
+        throw 'Не удалось получить фотографии. Попробуйте ещё раз';
+      }
+
+      return response.json();
+    })
     .catch(() => {
       throw 'При загрузке данных с сервера произошла ошибка запроса';
     });

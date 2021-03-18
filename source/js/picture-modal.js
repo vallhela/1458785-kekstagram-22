@@ -1,4 +1,9 @@
-import {removeChildren, asModal} from './utils.js';
+import {createModal} from './modal.js';
+import {removeChildren} from './utils.js';
+
+const COMMENTS_BATCH_SIZE = 5;
+const COMMENT_IMAGE_HEIGHT = 35;
+const COMMENT_IMAGE_WIDTH = 35;
 
 const bigPictureView = document.querySelector('.big-picture');
 const bigPictureClose = bigPictureView.querySelector('.big-picture__cancel');
@@ -12,40 +17,43 @@ const bigPictureCommentsLoader = bigPictureView.querySelector('.comments-loader'
 const bigPictureSocialCommentCount = bigPictureView.querySelector('.social__comment-count');
 
 const createComment = function (comment) {
-  const li = document.createElement('li');
-  li.classList.add('social__comment');
   const img = document.createElement('img');
   img.classList.add('social__picture');
   img.src = comment.avatar;
   img.alt = comment.name;
-  img.width = 35;
-  img.height = 35;
+  img.height = COMMENT_IMAGE_HEIGHT;
+  img.width = COMMENT_IMAGE_WIDTH;
+
   const p = document.createElement('p');
   p.classList.add('social__text');
   p.textContent = comment.message;
+
+  const li = document.createElement('li');
+  li.classList.add('social__comment');
   li.appendChild(img);
   li.appendChild(p);
+
   return li;
 };
 
-const showPhotoModal = function (photo) {
-  bigPictureImage.src = photo.url;
-  bigPictureLikes.textContent = photo.likes;
-  bigPictureCommentsCount.textContent = photo.comments.length;
-  bigPictureDescription.textContent = photo.description;
+const showPictureModal = function (picture) {
+  bigPictureImage.src = picture.url;
+  bigPictureLikes.textContent = picture.likes;
+  bigPictureCommentsCount.textContent = picture.comments.length;
+  bigPictureDescription.textContent = picture.description;
 
   removeChildren(bigPictureComments);
 
-  const modal = asModal(bigPictureView);
-  modal.context.photo = photo;
+  const modal = createModal(bigPictureView);
+  modal.context.picture = picture;
   modal.context.showedComments = [];
   modal.context.showNextComments = function(){
-    const batchCount = Math.floor((modal.context.showedComments.length/5));
+    const batchCount = Math.floor((modal.context.showedComments.length/COMMENTS_BATCH_SIZE));
     const nextBatchCount = batchCount+1;
 
-    const commentsToAppend = modal.context.photo.comments.slice(
-      batchCount*5,
-      Math.max(0, Math.min(modal.context.photo.comments.length, nextBatchCount*5)));
+    const commentsToAppend = modal.context.picture.comments.slice(
+      batchCount*COMMENTS_BATCH_SIZE,
+      Math.max(0, Math.min(modal.context.picture.comments.length, nextBatchCount*COMMENTS_BATCH_SIZE)));
 
     commentsToAppend.forEach(comment => {
       bigPictureComments.appendChild(createComment(comment));
@@ -53,8 +61,9 @@ const showPhotoModal = function (photo) {
 
     modal.context.showedComments.push(...commentsToAppend);
     removeChildren(bigPictureSocialCommentCount);
-    bigPictureSocialCommentCount.innerHTML = modal.context.showedComments.length + ' из <span class="comments-count">'+modal.context.photo.comments.length+'</span> комментариев';
-    if(modal.context.showedComments.length < modal.context.photo.comments.length){
+
+    bigPictureSocialCommentCount.innerHTML = modal.context.showedComments.length + ' из <span class="comments-count">'+modal.context.picture.comments.length+'</span> комментариев';
+    if(modal.context.showedComments.length < modal.context.picture.comments.length){
       bigPictureCommentsLoader.classList.remove('hidden');
     }
     else{
@@ -62,23 +71,26 @@ const showPhotoModal = function (photo) {
     }
   };
 
-  const onBigPictureCloseClicked = function(){
+  const onBigPictureCloseClick = function(){
     modal.close();
   }
-  bigPictureClose.addEventListener('click', onBigPictureCloseClicked);
 
-  const onCommentsLoaderClicked = function(){
+  const onBigPictureCommentsLoaderClick = function(){
     modal.context.showNextComments();
   }
-  bigPictureCommentsLoader.addEventListener('click', onCommentsLoaderClicked);
+
+  modal.onOpened = function(){
+    bigPictureClose.addEventListener('click', onBigPictureCloseClick);
+    bigPictureCommentsLoader.addEventListener('click', onBigPictureCommentsLoaderClick);
+  }
 
   modal.onClosed = function(){
-    bigPictureClose.removeEventListener('click', onBigPictureCloseClicked);
-    bigPictureCommentsLoader.removeEventListener('click', onCommentsLoaderClicked);
+    bigPictureClose.removeEventListener('click', onBigPictureCloseClick);
+    bigPictureCommentsLoader.removeEventListener('click', onBigPictureCommentsLoaderClick);
   };
 
   modal.context.showNextComments();
   modal.open();
 };
 
-export {showPhotoModal};
+export {showPictureModal};

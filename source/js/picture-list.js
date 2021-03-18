@@ -1,50 +1,51 @@
 /* global _:readonly */
-import {showPhotoModal} from './big-picture.js';
+import {showPictureModal} from './picture-modal.js';
 import {getRandomUniqueArrayElements} from './utils.js';
+
+const PICTURES_COUNT_DEFAULT = 25;
+const PICTURES_COUNT_RANDOM = 10;
+const UPDATE_FILTER_DEBOUNCE_DELAY = 500;
+
+const pictures = [];
 
 const pictureContainer = document.querySelector('.pictures');
 const pictureTemplate = document.querySelector('#picture').content.querySelector('.picture');
-const SIMILAR_PICTURES_COUNT = 25;
-const PICTURES_COUNT_RANDOM = 10;
 const filter = document.querySelector('.img-filters');
 const filterDefault = filter.querySelector('#filter-default');
 const filterRandom = filter.querySelector('#filter-random');
 const filterDiscussed = filter.querySelector('#filter-discussed');
 
-const pictures = [];
-const RERENDER_DELAY = 500;
-
-const renderPictureList = (similarPictures) => {
+const render = (pics) => {
   const existingPictures = pictureContainer.querySelectorAll('.picture');
   for (let existingPicture of existingPictures) {
     existingPicture.parentNode.removeChild(existingPicture);
   }
-  const similarListFragment = document.createDocumentFragment();
 
-  similarPictures
-    .slice(0, SIMILAR_PICTURES_COUNT)
-    .forEach((photo) => {
-      const pictureElement = pictureTemplate.cloneNode(true);
-      pictureElement.querySelector('.picture__img').src = photo.url;
-      pictureElement.querySelector('.picture__comments').textContent = photo.comments.length;
-      pictureElement.querySelector('.picture__likes').textContent = photo.likes;
+  const picturesListFragment = document.createDocumentFragment();
+  pics
+    .slice(0, PICTURES_COUNT_DEFAULT)
+    .forEach((pic) => {
+      const picture = pictureTemplate.cloneNode(true);
+      picture.querySelector('.picture__img').src = pic.url;
+      picture.querySelector('.picture__comments').textContent = pic.comments.length;
+      picture.querySelector('.picture__likes').textContent = pic.likes;
 
-      pictureElement.addEventListener('click', () => {
-        showPhotoModal(photo);
+      picture.addEventListener('click', () => {
+        showPictureModal(pic);
       });
 
-      similarListFragment.appendChild(pictureElement);
+      picturesListFragment.appendChild(picture);
     });
 
-  pictureContainer.appendChild(similarListFragment);
+  pictureContainer.appendChild(picturesListFragment);
 };
 
 const updateFilter = _.debounce(
   function (filter) {
     const filtered = filter(pictures);
-    renderPictureList(filtered);
+    render(filtered);
   },
-  RERENDER_DELAY);
+  UPDATE_FILTER_DEBOUNCE_DELAY);
 
 const updateFilterButtons = function (selectedFilterButton) {
   if (selectedFilterButton !== filterDefault) {
@@ -56,10 +57,11 @@ const updateFilterButtons = function (selectedFilterButton) {
   if (selectedFilterButton !== filterDiscussed) {
     filterDiscussed.classList.remove('img-filters__button--active');
   }
+
   selectedFilterButton.classList.add('img-filters__button--active');
 };
 
-const getFilter = function(selectedFilterButton){
+const getFilterFunction = function(selectedFilterButton){
   if (filterRandom === selectedFilterButton) {
     return (pics) => getRandomUniqueArrayElements(pics, PICTURES_COUNT_RANDOM);
   }
@@ -70,22 +72,27 @@ const getFilter = function(selectedFilterButton){
   return (pics) => pics;
 }
 
-const onFilterClicked = function(evt){
-  const clickedButton = evt.target;
-  updateFilterButtons(clickedButton);
+const setFilter = function(selectedFilterButton){
+  updateFilterButtons(selectedFilterButton);
 
-  const filter = getFilter(clickedButton);
+  const filter = getFilterFunction(selectedFilterButton);
   updateFilter(filter);
 }
 
-filterDefault.addEventListener('click', onFilterClicked);
-filterRandom.addEventListener('click', onFilterClicked);
-filterDiscussed.addEventListener('click', onFilterClicked);
+const onFilterButtonClick = function(evt){
+  const clickedButton = evt.target;
+  setFilter(clickedButton);
+}
 
-const initializePicturesList = function (pics) {
+filterDefault.addEventListener('click', onFilterButtonClick);
+filterRandom.addEventListener('click', onFilterButtonClick);
+filterDiscussed.addEventListener('click', onFilterButtonClick);
+
+const initializePictureList = function (pics) {
   pictures.push(...pics);
-  renderPictureList(pictures);
+  setFilter(filterDefault);
+
   filter.classList.remove('img-filters--inactive');
 };
 
-export {initializePicturesList};
+export {initializePictureList};

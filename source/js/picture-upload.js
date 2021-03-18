@@ -1,25 +1,32 @@
-import {asModal, isValidLength, isEscEvent} from './utils.js';
-import {showSuccess, showError} from './message-box.js';
-import '../nouislider/nouislider.js';
+import {createModal} from './modal.js';
+import {isValidLength, isEscEvent} from './utils.js';
+import {showSuccessMessageBox, showErrorMessageBox} from './message-box.js';
 import {sendData} from './api.js';
+
+const SCALE_DEFAULT_VALUE = 100;
+const SCALE_MIN_VALUE = 25;
+const SCALE_MAX_VALUE = 100;
+const SCALE_STEP_VALUE = 25;
+const EFFECT_DEFAULT = 'effects__preview--none';
+const DESCRIPTION_MAX_LENGTH = 140;
+const HASHTAG_MIN_LENGTH = 1;
+const HASHTAG_MAX_LENGTH = 20;
+const HASHTAG_MAX_COUNT = 5;
+const LETTERS = /^[0-9a-zA-Zа-яА-Я]+$/;
+const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
 
 const noUiSlider = window.noUiSlider;
 
-const uploadPictureModal = document.querySelector('.img-upload__overlay');
-const uploadPicture = document.querySelector('#upload-file');
-const uploadCancel = uploadPictureModal.querySelector('#upload-cancel');
+const pictureUploadModal = document.querySelector('.img-upload__overlay');
+const pictureStartUploadInput = document.querySelector('#upload-file');
+const pictureCancelUploadButton = pictureUploadModal.querySelector('#upload-cancel');
 
 // Переменные для масштабирования
-const scaleDefaultValue = 100;
-const scaleSmaller = uploadPictureModal.querySelector('.scale__control--smaller');
-const scaleBigger = uploadPictureModal.querySelector('.scale__control--bigger');
-const scaleValue = uploadPictureModal.querySelector('.scale__control--value');
-const scalePhotoContainer = document.querySelector('.img-upload__preview');
-const scalePhoto = scalePhotoContainer.querySelector('img');
-const scaleMinValue = 25;
-const scaleMaxValue = 100;
-const scaleStepValue = 25;
-const effectDefault = 'effects__preview--none';
+const scaleSmallerButton = pictureUploadModal.querySelector('.scale__control--smaller');
+const scaleBiggerButton = pictureUploadModal.querySelector('.scale__control--bigger');
+const scaleValue = pictureUploadModal.querySelector('.scale__control--value');
+const previewContainer = document.querySelector('.img-upload__preview');
+const previewImg = previewContainer.querySelector('img');
 
 // Переменные для наложения эффектов
 const effects = {
@@ -117,21 +124,16 @@ const uploadForm = document.querySelector('.img-upload__form');
 const uploadFormText = document.querySelector('.img-upload__text');
 const hashtagInput = uploadFormText.querySelector('.text__hashtags');
 const descriptionInput = uploadFormText.querySelector('.text__description');
-const MAX_DESCRIPTION_LENGTH = 140;
-const MIN_HASHTAG_LENGTH = 1;
-const MAX_HASHTAG_LENGTH = 20;
-const MAX_HASHTAG_COUNT = 5;
-const letters = /^[0-9a-zA-Zа-яА-Я]+$/;
-const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+
+const submitButton = document.querySelector('#upload-submit');
 
 const setScale = function(scale){
   scaleValue.value = scale + '%';
-  scalePhoto.style.transform = 'scale(' + (scale / 100) + ')';
+  previewImg.style.transform = 'scale(' + (scale / 100) + ')';
 }
 
-uploadPicture.addEventListener('change', function() {
-
-  const file = uploadPicture.files[0];
+pictureStartUploadInput.addEventListener('change', function() {
+  const file = pictureStartUploadInput.files[0];
   const fileName = file.name.toLowerCase();
 
   const matches = FILE_TYPES.some((it) => {
@@ -142,26 +144,16 @@ uploadPicture.addEventListener('change', function() {
     const reader = new FileReader();
 
     reader.addEventListener('load', () => {
-      scalePhoto.src = reader.result;
+      previewImg.src = reader.result;
     });
 
     reader.readAsDataURL(file);
   }
 
-  setScale(scaleDefaultValue);
-  const modal = asModal(uploadPictureModal);
-  const onUploadCancelClicked = function(){
+  setScale(SCALE_DEFAULT_VALUE);
+  const modal = createModal(pictureUploadModal);
+  const onPictureCancelUploadButtonClick = function(){
     modal.close();
-  };
-
-  modal.onClosed = function(){
-    setEffect(effectDefault);
-    setScale(scaleDefaultValue);
-    uploadPicture.value = '';
-    descriptionInput.value = '';
-    hashtagInput.value = '';
-    uploadForm.removeEventListener('submit', onUploadFormSubmit);
-    uploadCancel.removeEventListener('click', onUploadCancelClicked);
   };
 
   const onUploadFormSubmit = function(evt){
@@ -170,37 +162,53 @@ uploadPicture.addEventListener('change', function() {
     sendData(new FormData(evt.target))
       .then(() =>{
         modal.close();
-        showSuccess();
+        showSuccessMessageBox();
       })
-      .catch(() => showError());
-  }
+      .catch(() =>
+      {
+        modal.close();
+        showErrorMessageBox();
+      });
+  };
 
-  uploadCancel.addEventListener('click', onUploadCancelClicked);
-  uploadForm.addEventListener('submit', onUploadFormSubmit);
+  modal.onOpened = function(){
+    pictureCancelUploadButton.addEventListener('click', onPictureCancelUploadButtonClick);
+    uploadForm.addEventListener('submit', onUploadFormSubmit);
+  };
 
-  setEffect(effectDefault);
+  modal.onClosed = function(){
+    uploadForm.removeEventListener('submit', onUploadFormSubmit);
+    pictureCancelUploadButton.removeEventListener('click', onPictureCancelUploadButtonClick);
+    setEffect(EFFECT_DEFAULT);
+    setScale(SCALE_DEFAULT_VALUE);
+    pictureStartUploadInput.value = '';
+    descriptionInput.value = '';
+    hashtagInput.value = '';
+  };
+
+  setEffect(EFFECT_DEFAULT);
   modal.open();
 });
 
 // ------------------Масштабирование----------------------------
 
-scaleSmaller.addEventListener('click', function() {
+scaleSmallerButton.addEventListener('click', function() {
   let scale = parseInt(scaleValue.value);
-  scale = scale - scaleStepValue;
+  scale = scale - SCALE_STEP_VALUE;
 
-  if (scale < scaleMinValue) {
-    scale = scaleMinValue;
+  if (scale < SCALE_MIN_VALUE) {
+    scale = SCALE_MIN_VALUE;
   }
 
   setScale(scale);
 });
 
-scaleBigger.addEventListener('click', function() {
+scaleBiggerButton.addEventListener('click', function() {
   let scale = parseInt(scaleValue.value);
-  scale = scale + scaleStepValue;
+  scale = scale + SCALE_STEP_VALUE;
 
-  if(scale > scaleMaxValue) {
-    scale = scaleMaxValue;
+  if(scale > SCALE_MAX_VALUE) {
+    scale = SCALE_MAX_VALUE;
   }
 
   setScale(scale);
@@ -209,9 +217,9 @@ scaleBigger.addEventListener('click', function() {
 // ------------------Наложение эффектов----------------------------
 
 const setEffect = function(effectClass) {
-  scalePhoto.className = '';
-  scalePhoto.style.filter = '';
-  scalePhoto.classList.add(effectClass);
+  previewImg.className = '';
+  previewImg.style.filter = '';
+  previewImg.classList.add(effectClass);
 
   const radioButtonId = effectClass.replace('s__preview-','');
   const radio = effectsList.querySelector('#' + radioButtonId);
@@ -220,7 +228,7 @@ const setEffect = function(effectClass) {
   const effect = effects.getByClass(effectClass);
   if (effect) {
     const sliderOptions = effect.getSliderOptions();
-    effect.set(scalePhoto, sliderOptions.initial);
+    effect.set(previewImg, sliderOptions.initial);
 
     effectsSlider.noUiSlider.updateOptions({
       range:{
@@ -238,7 +246,7 @@ const setEffect = function(effectClass) {
   }
 };
 
-const setSlider = function() {
+const initializeSlider = function() {
   noUiSlider.create(effectsSlider, {
     range: {
       min: 0,
@@ -250,12 +258,12 @@ const setSlider = function() {
   });
 
   effectsSlider.noUiSlider.on('update', (values, handle) => {
-    const effect = effects.getByClass(scalePhoto.className);
+    const effect = effects.getByClass(previewImg.className);
     if (effect) {
       const value = values[handle];
       const initial = effect.getSliderOptions().initial;
       effectsSliderValue.value = (100*(+value)/(+initial)).toFixed(0);
-      effect.set(scalePhoto, value);
+      effect.set(previewImg, value);
     }
     else{
       effectsSliderValue.value = '';
@@ -272,8 +280,6 @@ effectsList.addEventListener('change', function() {
   }
 });
 
-setSlider();
-
 // ------------------Валидация формы----------------------------
 
 hashtagInput.addEventListener('keydown', (evt) => {
@@ -287,15 +293,15 @@ const validateHashtag = function (hashtag) {
     return 'Хэш-тег должен начинаться с #';
   }
 
-  if (hashtag.length === MIN_HASHTAG_LENGTH) {
+  if (hashtag.length === HASHTAG_MIN_LENGTH) {
     return 'Хэш-тег не может состоять только из одной #';
   }
 
-  if (hashtag.length > MAX_HASHTAG_LENGTH) {
+  if (hashtag.length > HASHTAG_MAX_LENGTH) {
     return 'Максимальная длина одного хэш-тега 20 символов, включая #';
   }
 
-  if (!hashtag.substring(1).match(letters)) {
+  if (!hashtag.substring(1).match(LETTERS)) {
     return 'Cтрока после решётки должна состоять из букв и чисел и не может содержать пробелы, спецсимволы (#, @, $ и т. п.), символы пунктуации (тире, дефис, запятая и т. п.), эмодзи и т. д.';
   }
 
@@ -308,7 +314,7 @@ const validateHashtags = function (hashtags) {
     return 'Oдин и тот же хэш-тег не может быть использован дважды';
   }
 
-  if (hashtags.length > MAX_HASHTAG_COUNT) {
+  if (hashtags.length > HASHTAG_MAX_COUNT) {
     return 'Нельзя указать больше пяти хэш-тегов';
   }
 
@@ -335,7 +341,6 @@ hashtagInput.addEventListener('input', () => {
   }
 
   hashtagInput.reportValidity();
-
 });
 
 descriptionInput.addEventListener('keydown', (evt) => {
@@ -347,17 +352,18 @@ descriptionInput.addEventListener('keydown', (evt) => {
 descriptionInput.addEventListener('input', () => {
   const descriptionLength = descriptionInput.value.length;
 
-  if (isValidLength(descriptionLength, MAX_DESCRIPTION_LENGTH)) {
-    descriptionInput.setCustomValidity('Использовано ' + descriptionLength +' симв. из ' + MAX_DESCRIPTION_LENGTH);
-  } else if (descriptionLength  > MAX_DESCRIPTION_LENGTH) {
-    descriptionInput.setCustomValidity('Удалите лишние ' + (descriptionLength - MAX_DESCRIPTION_LENGTH) +' симв.');
+  if (isValidLength(descriptionLength, DESCRIPTION_MAX_LENGTH)) {
+    descriptionInput.setCustomValidity('Использовано ' + descriptionLength +' симв. из ' + DESCRIPTION_MAX_LENGTH);
+  } else if (descriptionLength  > DESCRIPTION_MAX_LENGTH) {
+    descriptionInput.setCustomValidity('Удалите лишние ' + (descriptionLength - DESCRIPTION_MAX_LENGTH) +' симв.');
   } else {
     descriptionInput.setCustomValidity('');
   }
   descriptionInput.reportValidity();
 });
 
-const buttonClick = document.querySelector('#upload-submit');
-buttonClick.addEventListener('click', function() {
-  buttonClick.focus();
+submitButton.addEventListener('click', function() {
+  submitButton.focus();
 });
+
+initializeSlider();
